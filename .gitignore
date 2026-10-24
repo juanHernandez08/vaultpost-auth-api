@@ -1,0 +1,4 @@
+node_modules/
+.env
+postman/reporte-newman.html
+postman/resultado-newman.json

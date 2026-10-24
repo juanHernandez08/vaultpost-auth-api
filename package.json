@@ -1,0 +1,23 @@
+{
+  "name": "vaultpost-auth-api",
+  "version": "1.0.0",
+  "description": "Servicio web de registro e inicio de sesión de Vaultpost",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "newman run postman/Vaultpost-Auth-API.postman_collection.json"
+  },
+  "author": "Juan Esteban Hernández, Dayana Andrea Gómez",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.6"
+  },
+  "devDependencies": {
+    "newman": "^6.2.3",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
