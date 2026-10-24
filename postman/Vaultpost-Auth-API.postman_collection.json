@@ -1,0 +1,546 @@
+{
+  "info": {
+    "name": "Vaultpost Auth API",
+    "description": "Pruebas del servicio web de registro e inicio de sesión (GA7-220501096-AA5)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Estado del servicio",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/salud",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "salud"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Servicio activo\", () => pm.expect(pm.response.json().ok).to.be.true);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Registro exitoso",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/registro",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "registro"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"{{usuario}}\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"usuario\", \"juan.\" + Date.now().toString().slice(-8));",
+              "pm.collectionVariables.set(\"contrasena\", \"Vaultpost2026\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Mensaje: registrado\", () => pm.expect(pm.response.json().mensaje).to.include(\"registrado\"));",
+              "pm.test(\"Devuelve id del usuario\", () => pm.expect(pm.response.json().usuario.id).to.be.a(\"number\"));",
+              "pm.test(\"No devuelve la contraseña\", () => pm.expect(pm.response.text()).to.not.include(\"Vaultpost2026\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Registro con usuario repetido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/registro",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "registro"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"{{usuario}}\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Mensaje: ya existe\", () => pm.expect(pm.response.json().mensaje).to.include(\"ya existe\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Registro con contraseña débil",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/registro",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "registro"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"maria.lopez\",\n  \"contrasena\": \"1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Mensaje: mínimo 8 caracteres\", () => pm.expect(pm.response.json().mensaje).to.include(\"mínimo 8 caracteres\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Registro con caracteres especiales en el usuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/registro",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "registro"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"juan<script>\",\n  \"contrasena\": \"Vaultpost2026\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Mensaje: entre 4 y 30 caracteres\", () => pm.expect(pm.response.json().mensaje).to.include(\"entre 4 y 30 caracteres\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Inicio de sesión correcto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"{{usuario}}\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Mensaje: Autenticación satisfactoria\", () => pm.expect(pm.response.json().mensaje).to.include(\"Autenticación satisfactoria\"));",
+              "const t = pm.response.json().token;",
+              "pm.test(\"Entrega un token JWT\", () => pm.expect(t.split(\".\").length).to.eql(3));",
+              "pm.collectionVariables.set(\"token\", t);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Inicio de sesión con contraseña incorrecta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"{{usuario}}\",\n  \"contrasena\": \"ClaveErrada99\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"Mensaje: Error en la autenticación\", () => pm.expect(pm.response.json().mensaje).to.include(\"Error en la autenticación\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Inicio de sesión con usuario inexistente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"no.existe\",\n  \"contrasena\": \"Vaultpost2026\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"Mensaje: Error en la autenticación\", () => pm.expect(pm.response.json().mensaje).to.include(\"Error en la autenticación\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Inicio de sesión sin datos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Mensaje: Debe enviar\", () => pm.expect(pm.response.json().mensaje).to.include(\"Debe enviar\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Perfil con token",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/perfil",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "perfil"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Corresponde al usuario autenticado\", () => pm.expect(pm.response.json().usuario.usuario).to.eql(pm.collectionVariables.get(\"usuario\")));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Perfil sin token",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/perfil",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "perfil"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"Mensaje: Token no enviado\", () => pm.expect(pm.response.json().mensaje).to.include(\"Token no enviado\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. JSON mal formado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"usuario\": \"juan\", ",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código de estado 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Mensaje: JSON válido\", () => pm.expect(pm.response.json().mensaje).to.include(\"JSON válido\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "usuario",
+      "value": ""
+    },
+    {
+      "key": "contrasena",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
